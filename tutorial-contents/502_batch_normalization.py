@@ -24,11 +24,11 @@ ACTIVATION = tf.nn.tanh
 B_INIT = tf.constant_initializer(-0.2)      # use a bad bias initialization
 
 # training data
-x = np.linspace(-7, 10, N_SAMPLES)[:, np.newaxis]
-np.random.shuffle(x)
+x = np.linspace(-7, 10, N_SAMPLES)[:, np.newaxis]   # 等差序列  (1,2000)
+np.random.shuffle(x)    # 打乱顺序，洗牌
 noise = np.random.normal(0, 2, x.shape)
 y = np.square(x) - 5 + noise
-train_data = np.hstack((x, y))
+train_data = np.hstack((x, y))  # 将x, y按水平方向堆叠起来
 
 # test data
 test_x = np.linspace(-7, 10, 200)[:, np.newaxis]
@@ -63,14 +63,15 @@ class NN(object):
         # !! IMPORTANT !! the moving_mean and moving_variance need to be updated,
         # pass the update_ops with control_dependencies to the train_op
         update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
-        with tf.control_dependencies(update_ops):
+        with tf.control_dependencies(update_ops):   # tf.control_dependencies(update_ops)通常与with连用，表示执行完参数op操作之后再执行with里面的后续操作
             self.train = tf.train.AdamOptimizer(LR).minimize(self.loss)
 
     def add_layer(self, x, out_size, ac=None):
         x = tf.layers.dense(x, out_size, kernel_initializer=self.w_init, bias_initializer=B_INIT)
         self.pre_activation.append(x)
         # the momentum plays important rule. the default 0.99 is too high in this case!
-        if self.is_bn: x = tf.layers.batch_normalization(x, momentum=0.4, training=tf_is_train)    # when have BN
+        if self.is_bn: 
+            x = tf.layers.batch_normalization(x, momentum=0.4, training=tf_is_train)    # when have BN
         out = x if ac is None else ac(x)
         return out
 
